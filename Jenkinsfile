@@ -45,7 +45,6 @@ pipeline {
                              sonar-scanner \
                              -Dsonar.projectKey=dvwa-sast-sonarqube \
                              -Dsonar.sources=. \
-                             -Dsonar.host.url=$SONAR_HOST_URL \
                              -Dsonar.login=$SONAR_AUTH_TOKEN
 
                              '''
