@@ -45,8 +45,9 @@ pipeline {
                              sonar-scanner \
                              -Dsonar.projectKey=dvwa-sast-sonarqube \
                              -Dsonar.sources=. \
-                             -Dsonar.host.url=http://host.docker.internal:9000 \
-                             -Dsonar.login=$SONAR_TOKEN
+                             -Dsonar.host.url=$SONAR_HOST_URL \
+                             -Dsonar.login=$SONAR_AUTH_TOKEN
+
                              '''
                         }
                 }
