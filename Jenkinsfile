@@ -33,5 +33,22 @@ pipeline {
 				sh 'echo "docker run my-php-app ."'
 			} 
 		} 
+		stage('SonarQube Scan') {
+                        agent { 
+                                docker { image 'sonarsource/sonar-scanner-cli:latest' }
+                        }
+                        environment {
+                            SONAR_TOKEN = credentials('sonarqube-token')
+                        }
+                        steps {
+                             sh '''
+                             sonar-scanner \
+                             -Dsonar.projectKey=dvwa-sast-sonarqube \
+                             -Dsonar.sources=. \
+                             -Dsonar.host.url=http://host.docker.internal:9000 \
+                             -Dsonar.login=$SONAR_TOKEN
+                             '''
+                        }
+                }
 	}	 
 }
