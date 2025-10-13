@@ -45,8 +45,8 @@ pipeline {
         post {
             always {
                archiveArtifacts artifacts: 'sonar-report.json', fingerprint: true
+            }
         }
-    }
-}
+
     }
 }
