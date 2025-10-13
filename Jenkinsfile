@@ -33,37 +33,50 @@ pipeline {
 
         stage('SonarQube Scan') {
             agent {
-                docker { image 'sonarsource/sonar-scanner-cli:latest' }
+                docker {
+                    image 'sonarsource/sonar-scanner-cli:latest'
+                    args '--entrypoint=""'  // evita el error del ENTRYPOINT
+                }
             }
             steps {
                 script {
-                    // Ejecuta el análisis de SonarQube dentro del entorno configurado
+                    // Ejecuta el análisis con las variables inyectadas desde Jenkins
                     withSonarQubeEnv('SonarQube') {
                         sh '''
                             echo "Ejecutando análisis con SonarQube..."
                             sonar-scanner \
                               -Dsonar.projectKey=dvwa-sast-sonarqube \
                               -Dsonar.sources=. \
-                              -Dsonar.login=$SONAR_AUTH_TOKEN \
-                              -Dsonar.report.export.path=sonar-report.json
+                              -Dsonar.token=$SONAR_AUTH_TOKEN
                         '''
                     }
                 }
             }
             post {
                 always {
-                    // Archiva el reporte JSON como artefacto en Jenkins
+                    // Descarga el reporte JSON desde la API REST de SonarQube
+                    script {
+                        echo "Descargando reporte desde SonarQube API..."
+                        sh '''
+                            curl -s -u $SONAR_AUTH_TOKEN: \
+                                "$SONAR_HOST_URL/api/issues/search?componentKeys=dvwa-sast-sonarqube" \
+                                -o sonar-report.json || echo "{}" > sonar-report.json
+                        '''
+                    }
+                    // Archiva el reporte como artefacto
                     archiveArtifacts artifacts: 'sonar-report.json', fingerprint: true
-                    echo "Reporte de SonarQube archivado correctamente."
+                    echo "Reporte de SonarQube archivado correctamente en Jenkins."
                 }
             }
         }
 
         stage('Quality Gate') {
             steps {
-                // Espera el resultado de la Quality Gate (puede bloquear el pipeline si falla)
-                timeout(time: 2, unit: 'MINUTES') {
-                    waitForQualityGate abortPipeline: true
+                script {
+                    echo "Esperando resultado de la Quality Gate..."
+                    timeout(time: 2, unit: 'MINUTES') {
+                        waitForQualityGate abortPipeline: true
+                    }
                 }
             }
         }
@@ -81,4 +94,3 @@ pipeline {
         }
     }
 }
-
