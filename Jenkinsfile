@@ -6,7 +6,7 @@ pipeline {
                 script {
                     scannerHome = tool 'sonarqube-scanner'// debe coincidir con el nombre de definido en Jenkins -> Manage Jenkins -> Tool Configuration
                 }
-                withSonarQubeEnv('Sonarqube-docker') {// Si ha configurado más de una conexión de servidor global, puede especificar su nombre según lo configurado en Jenkins
+                withSonarQubeEnv('SonarQube') {// Si ha configurado más de una conexión de servidor global, puede especificar su nombre según lo configurado en Jenkins
                     sh "${scannerHome}/bin/sonar-scanner -Dsonar.projectKey=jenkins-testing -Dsonar.sources=."                }
             }
         }
